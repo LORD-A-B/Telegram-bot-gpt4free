@@ -1,4 +1,6 @@
 import logging
+import os
+
 from aiogram import Bot, Dispatcher, types
 import g4f
 from aiogram.utils import executor
@@ -7,12 +9,13 @@ from aiogram.utils import executor
 logging.basicConfig(level=logging.INFO)
 
 # Инициализация бота
-API_TOKEN = 'ВАШ ТОКЕН ТЕЛЕГРАМ'
+API_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', 'ВАШ ТОКЕН ТЕЛЕГРАМ')
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
 # Словарь для хранения истории разговоров
 conversation_history = {}
+
 
 # Функция для обрезки истории разговора
 def trim_history(history, max_length=4096):
@@ -28,6 +31,7 @@ async def process_clear_command(message: types.Message):
     user_id = message.from_user.id
     conversation_history[user_id] = []
     await message.reply("История диалога очищена.")
+
 
 # Обработчик для каждого нового сообщения
 @dp.message_handler()
@@ -52,7 +56,7 @@ async def send_welcome(message: types.Message):
         chat_gpt_response = response
     except Exception as e:
         print(f"{g4f.Provider.GeekGpt.__name__}:", e)
-        chat_gpt_response = "Извините, произошла ошибка."
+        chat_gpt_response = f"Извините, произошла ошибка. {e}"
 
     conversation_history[user_id].append({"role": "assistant", "content": chat_gpt_response})
     print(conversation_history)
